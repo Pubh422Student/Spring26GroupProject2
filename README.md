@@ -1,4 +1,4 @@
-# PUBH 422 - Group Project 2: NHIS 2021 Population Health Analysis
+# PUBH 422 - Group Project 2 - Group 1: NHIS 2021 Population Health Analysis
 
 ## Team Information
 * **Course:** PUBH 422 - Statistical Programming in Health Data Management and Visualization
