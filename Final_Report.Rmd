@@ -1,0 +1,437 @@
+---
+title: "PUBH 422 - Group Project 2 - Group 1: NHIS 2021 Population Health Analysis"
+author: "Jesse Han, Gloriana Camarena, Tiffany Morales, Edward Sanchez"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+options(width = 75)
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  tidy = TRUE,
+  tidy.opts = list(width.cutoff = 60)
+)
+```
+
+# Day 1: Project Setup & Data Import
+
+## Task 2: Environment Setup & Data Import
+
+```{r, eval=FALSE}
+# Loads necessary libraries
+library(tidyverse)
+
+# Import dataset 
+nhis_raw <- read.csv("NHIS _Data_2021.csv")
+
+# Initial Exploration
+print("Dataset Structure:")
+str(nhis_raw)
+
+print("Statistical Summary:")
+summary(nhis_raw)
+
+print("First 6 Rows:")
+head(nhis_raw)
+```
+
+### Statistical Summary Table (`summary(nhis_raw)`)
+
+*(Based on* $N = 29,482$ observations across all 18 variables in `NHIS _Data_2021.csv`)
+
+| Variable       | Min   | 1st Qu. | Median | Mean  | 3rd Qu. | Max    |
+|----------------|-------|---------|--------|-------|---------|--------|
+| `DEMENEV_A`    | 1.000 | 2.000   | 2.000  | 1.993 | 2.000   | 9.000  |
+| `COPDEV_A`     | 1.000 | 2.000   | 2.000  | 1.951 | 2.000   | 9.000  |
+| `HYPEV_A`      | 1.000 | 1.000   | 2.000  | 1.648 | 2.000   | 9.000  |
+| `DEPEV_A`      | 1.000 | 2.000   | 2.000  | 1.829 | 2.000   | 9.000  |
+| `CANEV_A`      | 1.000 | 2.000   | 2.000  | 1.882 | 2.000   | 9.000  |
+| `DIBEV_A`      | 1.000 | 2.000   | 2.000  | 1.900 | 2.000   | 9.000  |
+| `AGEP_A`       | 18.00 | 37.00   | 53.00  | 52.63 | 68.00   | 99.00  |
+| `SEX_A`        | 1.000 | 1.000   | 2.000  | 1.547 | 2.000   | 9.000  |
+| `HISPALLP_A`   | 1.000 | 2.000   | 2.000  | 2.203 | 2.000   | 7.000  |
+| `MARSTAT_A`    | 1.000 | 1.000   | 4.000  | 3.858 | 7.000   | 9.000  |
+| `EDUCP_A`      | 1.000 | 4.000   | 6.000  | 6.447 | 8.000   | 99.000 |
+| `PHSTAT_A`     | 1.00  | 2.00    | 2.00   | 2.39  | 3.00    | 9.00   |
+| `LSATIS4R_A`   | 1.000 | 1.000   | 2.000  | 1.748 | 2.000   | 9.000  |
+| `SMKCIGST_A`   | 1.000 | 3.000   | 4.000  | 3.579 | 4.000   | 9.000  |
+| `RATCAT_A`     | 1.000 | 7.000   | 11.000 | 9.848 | 14.000  | 14.000 |
+| `BMICAT_A`     | 1.000 | 2.000   | 3.000  | 3.121 | 4.000   | 9.000  |
+| `WEIGHTLBTC_A` | 100.0 | 150.0   | 180.0  | 248.8 | 215.0   | 999.0  |
+| `HEIGHTTC_A`   | 59.00 | 64.00   | 67.00  | 68.72 | 70.00   | 99.00  |
+
+**Interpretation:**
+
+Shows a raw sample of 29,482 observations across 18 variables. Several variables contain non-response or missing codes at the upper end of their ranges. For example, `AGEP_A` reaches a maximum of `99` (missing/non-response) rather than the top-coded `85` (`85+`), `WEIGHTLBTC_A` reaches `999` (pulling the raw mean up to `248.8` lbs vs. a median of `180.0` lbs), and `HEIGHTTC_A` reaches `99` (compared to valid heights of `59–76` inches). Categorical health and demographic indicators (`SEX_A`, `EDUCP_A`, `PHSTAT_A`, `LSATIS4R_A`) also include missing/unknown codes (`7`, `8`, `9`, `99`).
+
+### Print Out the First 6 Rows (`head(nhis_raw)`)
+
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|----|
+| **Row** | **DEMENEV_A** | **COPDEV_A** | **HYPEV_A** | **DEPEV_A** | **CANEV_A** | **DIBEV_A** | **AGEP_A** | **SEX_A** | **HISPALLP_A** | **MARSTAT_A** | **EDUCP_A** | **PHSTAT_A** | **LSATIS4R_A** | **SMKCIGST_A** | **RATCAT_A** | **BMICAT_A** | **WEIGHTLBTC_A** | **HEIGHTTC_A** |
+| **1** | 2 | 2 | 1 | 2 | 2 | 2 | 50 | 1 | 2 | 5 | 1 | 2 | 2 | 3 | 7 | 3 | 199 | 69 |
+| **2** | 2 | 2 | 1 | 2 | 2 | 1 | 53 | 1 | 3 | 6 | 7 | 2 | 1 | 4 | 12 | 3 | 205 | 75 |
+| **3** | 2 | 2 | 2 | 2 | 2 | 2 | 56 | 1 | 2 | 5 | 8 | 2 | 3 | 3 | 14 | 3 | 160 | 67 |
+| **4** | 2 | 2 | 1 | 2 | 2 | 2 | 57 | 2 | 2 | 7 | 5 | 4 | 2 | 3 | 11 | 4 | 190 | 63 |
+| **5** | 2 | 2 | 2 | 2 | 2 | 2 | 25 | 1 | 3 | 9 | 4 | 3 | 8 | 9 | 6 | 4 | 250 | 72 |
+| **6** | 2 | 2 | 1 | 2 | 2 | 2 | 55 | 1 | 3 | 9 | 5 | 3 | 8 | 9 | 6 | 3 | 200 | 69 |
+
+**Interpretation:**
+
+This just confirms that the CSV data imported properly, which can be verified with the columns and rows loaded as expected without obvious formatting or parsing errors.
+
+# Day 2: Data Cleaning & Management
+
+## Task 1 & 2: Variable Selection, Missing Value Check & Recoding Variables
+
+```{r, eval=FALSE}
+# Task 1: Variable Selection and Missing Value Check
+
+# Loads necessary libraries
+library(tidyverse)
+
+# Load raw dataset
+nhis_raw <- read.csv("NHIS _Data_2021.csv")
+
+# Select required variables
+selected_vars <- c('AGEP_A', 'WEIGHTLBTC_A', 'HEIGHTTC_A', 'SEX_A', 'HISPALLP_A', 'EDUCP_A', 'PHSTAT_A', 'LSATIS4R_A')
+nhis_subset <- nhis_raw %>% select(all_of(selected_vars))
+
+# Identify and remove missing / non-response codes via listwise deletion
+nhis_clean <- nhis_subset %>%
+  filter(
+    !AGEP_A %in% c(97, 98, 99),
+    !WEIGHTLBTC_A %in% c(996, 997, 998, 999),
+    !HEIGHTTC_A %in% c(96, 97, 98, 99),
+    !SEX_A %in% c(7, 9),
+    !HISPALLP_A %in% c(97, 98, 99),
+    !EDUCP_A %in% c(97, 98, 99),
+    !PHSTAT_A %in% c(7, 8, 9),
+    !LSATIS4R_A %in% c(7, 8, 9)
+  )
+
+# Task 2: Recoding Variables
+
+# Recode EDUCP_A according to the codebook specifications:
+# 1 ~ less than High School (Original 0-4)
+# 2 ~ High School Graduate (Original 4)
+# 3 ~ Some College Education (Original 5-7)
+# 4 ~ College Graduate or better (Original 8-10)
+nhis_clean <- nhis_clean %>%
+  mutate(EDUCP_A_recoded = case_when(
+    EDUCP_A >= 0 & EDUCP_A <= 3 ~ "1_Less_than_HS",
+    EDUCP_A == 4 ~ "2_HS_Graduate",
+    EDUCP_A >= 5 & EDUCP_A <= 7 ~ "3_Some_College",
+    EDUCP_A >= 8 & EDUCP_A <= 10 ~ "4_College_Graduate_or_Better",
+    TRUE ~ NA_character_
+  )) %>%
+  mutate(EDUCP_A_recoded = factor(EDUCP_A_recoded, levels = c(
+    "1_Less_than_HS", "2_HS_Graduate", "3_Some_College", "4_College_Graduate_or_Better"
+  )))
+
+# Format categorical variables as factors
+nhis_clean <- nhis_clean %>%
+  mutate(
+    SEX_A = factor(SEX_A, levels = c(1, 2), labels = c("Male", "Female")),
+    HISPALLP_A = factor(HISPALLP_A),
+    PHSTAT_A = factor(PHSTAT_A, levels = 1:5, labels = c("Excellent", "Very Good", "Good", "Fair", "Poor")),
+    LSATIS4R_A = factor(LSATIS4R_A, levels = 1:4, labels = c("Very Satisfied", "Satisfied", "Dissatisfied", "Very Dissatisfied"))
+  )
+
+# Save cleaned dataset
+write.csv(nhis_clean, "nhis_clean.csv", row.names = FALSE)
+print("Data cleaning complete. Cleaned dataset saved to nhis_clean.csv")
+```
+
+**Interpretation:**
+
+Subsetting to the 8 target variables and removing observations with missing/unknown codes (7, 8, 9, 96–99, 996–999) reduces the dataset from 29,482 to 26,037 complete cases (3,445 rows removed, or \~11.7%). Removing these codes prevents non-response values from distorting means, medians, or correlations. Once the data has been properly cleaned, a new dataset is made named `nhis_clean.csv` and is placed within the data folder.
+
+# Day 3: Univariate & Bivariate Analysis & Visualization
+
+## Task 1: Univariate Analysis
+
+```{r, eval=FALSE}
+# Loads necessary libraries
+library(tidyverse)
+nhis_clean <- read.csv("nhis_clean.csv")
+
+# Quantitative Variables
+quant_vars <- c("AGEP_A", "WEIGHTLBTC_A", "HEIGHTTC_A")
+for (var in quant_vars) {
+  cat("\nSummary Statistics for:", var, "\n")
+  x <- nhis_clean[[var]]
+  print(summary(x))
+  cat("Standard Deviation:", sd(x, na.rm = TRUE), "\n")
+  
+  # Base R & ggplot2 Visualizations
+  hist(x, main = paste("Base R Histogram of", var), xlab = var, col = "lightblue")
+  print(ggplot(nhis_clean, aes_string(x = var)) + geom_histogram(binwidth = 5, fill = "steelblue", color = "black") + theme_minimal())
+  
+  boxplot(x, main = paste("Base R Boxplot of", var), ylab = var, col = "pink")
+  print(ggplot(nhis_clean, aes_string(y = var)) + geom_boxplot(fill = "pink") + theme_minimal())
+}
+
+# Qualitative Variables
+cat_vars <- c("SEX_A", "HISPALLP_A", "EDUCP_A_recoded", "PHSTAT_A", "LSATIS4R_A")
+for (var in cat_vars) {
+  cat("\nFrequency Table for:", var, "\n")
+  print(table(nhis_clean[[var]]))
+  
+  barplot(table(nhis_clean[[var]]), main = paste("Base R Bar Plot of", var), col = "coral", las = 2)
+  print(ggplot(nhis_clean, aes_string(x = var)) + geom_bar(fill = "coral") + theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust = 1)))
+}
+```
+
+![](output/Base%20R%20Histogram%20of%20AGEP_A.png)
+
+**Interpretation:**
+
+The light-blue histogram displays frequency across adult ages from 18 to 85 (with 85 representing 85+). It shows a broad distribution across adulthood with lower counts among young adults around age 20, a noticeable peak in middle-to-older adulthood around ages 60–65 (approaching 2,500), and a final bar at the upper end reflecting top-coded ages 85+.
+
+![](output/ggplot2%20Histogram%20of%20AGEP_A.png)
+
+**Interpretation:**
+
+Rendered with `binwidth = 5` and a minimal theme, the steel-blue plot captures the same multi-wave adult age structure and peak near the early-to-mid 60s. Using a 5-year bin width smooths fine single-year fluctuations while clearly showing the sustained representation of adults in their 30s through 70s.
+
+![](output/Base%20R%20Boxplot%20of%20AGEP_A.png)
+
+**Interpretation:**
+
+The pink vertical boxplot shows a median age of $54.0$ years, with the middle $50\%$ of respondents (interquartile range, $\text{IQR}$) falling between $37.0$ years ($Q_1$) and $67.0$ years ($Q_3$) ($\text{IQR} = 30.0$ years). The whiskers extend smoothly to the minimum of $18.0$ years and maximum of $85.0$ years ($85+$ top-coded), with no plotted outliers.
+
+![](output/ggplot2%20Boxplot%20of%20AGEP_A.png)
+
+**Interpretation:**
+
+Using `geom_boxplot()` with a pink fill and minimal theme, this plot displays the same central tendency (median near 54.0), interquartile spread (37.0–67.0), and full adult age range without extreme outlier points.
+
+![](output/Base%20R%20Histogram%20of%20WEIGHTLBTC_A.png)
+
+**Interpretation:**
+
+The light-blue histogram shows weight concentrated in the middle range (roughly 140–210 lbs, peaking near 170–180 lbs with frequencies above 2,500). The distribution is slightly right-skewed, tapering off gradually toward heavier weights near 250–300 lbs.
+
+![](output/ggplot%202%20Histogram%20of%20WEIGHTLBTC_A.png)
+
+**Interpretation:**
+
+With a narrower bin width (`binwidth = 5`), this plot reveals more granular bin-to-bin variation including heaping/clustering around round numbers, while preserving the overall unimodal, slightly right-skewed shape centered around the mid-170s.
+
+![](output/Base%20R%20Boxplot%20of%20WEIGHTLBTC_A.png)
+
+**Interpretation:**
+
+The pink boxplot shows a median weight of $173.0\text{ lbs}$, with $Q_1 = 147.0\text{ lbs}$ and $Q_3 = 200.0\text{ lbs}$ ($\text{IQR} = 53.0\text{ lbs}$). The lower whisker reaches the minimum of 100.0 lbs, while the upper whisker extends to the upper fence (279.5 lbs), with 267 upper-end points (from 280.0 to 299.0 lbs) plotted above the upper whisker, reflecting the mild right skew in adult body weight.
+
+![](output/ggplot%202%20Boxplot%20of%20WEIGHTLBTC_A.png)
+
+**Interpretation:**
+
+This plot presents the same median (173.0 lbs), box boundaries (147.0–200.0 lbs), and upper-tail points above the upper whisker, visually confirming that higher weights stretch further above the median than lower weights stretch below it.
+
+![](output/Base%20R%20Histogram%20of%20HEIGHTTC_A.png)
+
+**Interpretation:**
+
+The light-blue histogram displays a relatively symmetric, unimodal distribution spanning roughly 59 to 76 inches, with highest frequencies between 63 and 68 inches (reaching roughly 2,400–2,500) and tapering toward both the shorter (around 60 inches) and taller (around 75 inches) ends.
+
+![](output/ggplot2%20Histogram%20of%20HEIGHTTC_A.png)
+
+**Interpretation:**
+
+Using `binwidth = 5`, the steel-blue bars group heights into wider intervals, highlighting a prominent central peak around the 63–67 inch span (exceeding 10,000 in the peak bin) and a second substantial block around 68–72 inches, with smaller counts at the lowest and highest intervals.
+
+![](output/Base%20R%20Boxplot%20of%20HEIGHTTC_A.png)
+
+**Interpretation:**
+
+The pink boxplot shows a median height of $66.0\text{ inches}$, with $Q_1 = 64.0\text{ inches}$ and $Q_3 = 70.0\text{ inches}$ ($\text{IQR} = 6.0\text{ inches}$). The whiskers span from the minimum of 59.0 inches to the maximum of 76.0 inches with no outliers plotted beyond the whiskers, indicating a compact, symmetric spread around the mid-60-inch range.
+
+![](output/ggplot%202%20Boxplot%20of%20HEIGHTTC_A.png)
+
+**Interpretation:**
+
+Rendered with a pink fill on a clean minimal grid, this plot mirrors the base R boxplot, showing the median at 66.0 inches, an IQR of 64.0–70.0 inches}, and balanced whiskers across the full 59–76 inch range with no outlier points.
+
+![](output/Base%20R%20Bar%20Plot%20of%20SEX_A.png)
+
+**Interpretation:**
+
+The coral bar plot shows that `Female` has a higher count (around 14,000) than `Male` (around 12,000) in the cleaned dataset, indicating a moderately female-majority sample.
+
+![](output/ggplot%202%20Bar%20Plot%20of%20SEX_A.png)
+
+**Interpretation:**
+
+This plot displays the same two categories (`Female` and `Male`) on a clean minimal grid with angled x-axis labels, confirming that female respondents make up a larger share of the analytical sample than male respondents.
+
+![](output/Base%20R%20Bar%20Plot%20of%20HISPALLP_A.png)
+
+**Interpretation:**
+
+The coral bars display frequencies across the numeric race/ethnicity codes (1 through 7), with code 2 (NH White only) standing out as by far the largest category (above 17,500), followed by much smaller counts in codes 1 (Hispanic), 3 (NH Black/African American only), and 4 (NH Asian only), and minimal counts in codes 5, 6, and 7.
+
+![](output/ggplot%202%20Bar%20Plot%20of%20HISPALLP_A.png)
+
+**Interpretation:**
+
+This plot presents the exact same count hierarchy across codes 1–7 with angled x-axis labels and gridlines, clearly illustrating the concentration in code 2 alongside smaller subgroup counts across the remaining categories.
+
+![](output/Base%20R%20Bar%20Plot%20of%20EDUCP_A_recoded.png)
+
+**Interpretation:**
+
+The coral bars step upward from left to right across the four recoded education tiers (`1_Less_than_HS`, `2_HS_Graduate`, `3_Some_College`, and `4_College_Graduate_or_Better`), showing that `4_College_Graduate_or_Better` is the largest group (above 10,000) and `1_Less_than_HS` is the smallest (under 3,000).
+
+![](output/ggplot%202%20Bar%20Plot%20of%20EDUCP_A_recoded.png)
+
+**Interpretation:**
+
+With angled category labels and a minimal background, this chart reinforces the steady increase in respondent counts from lower to higher educational attainment categories, peaking at college graduates or higher.
+
+![](output/Base%20R%20Bar%20Plot%20of%20PHSTAT_A.png)
+
+**Interpretation:**
+
+The coral bars compare the five general health categories (`Excellent`, `Fair`, `Good`, `Poor`, and `Very Good`), showing that `Very Good` is the most common response (above 9,000), followed by `Good` (around 7,300) and `Excellent` (around 6,000), while `Fair` (under 3,000) and `Poor` (under 1,000) are much less frequent.
+
+![](output/ggplot%202%20Bar%20Plot%20of%20PHSTAT_A.png)
+
+**Interpretation:**
+
+Displaying the same five categories along the x-axis, this plot visually emphasizes that the majority of respondents in the cleaned sample rate their general health positively (`Very Good`, `Good`, or `Excellent`), with relatively few reporting `Poor` health.
+
+![](output/Base%20R%20Bar%20Plot%20of%20LSATIS4R_A.png)
+
+**Interpretation:**
+
+The coral bars show that life satisfaction is heavily concentrated in the top two categories, `Very Satisfied` and `Satisfied` (both above 12,000), while `Dissatisfied` (around 1,000) and `Very Dissatisfied` (a few hundred) account for only a small fraction of respondents.
+
+![](output/ggplot%202%20Bar%20Plot%20of%20LSATIS4R_A.png)
+
+**Interpretation:**
+
+With angled labels and horizontal gridlines, this chart highlights the near-even, dominant split between `Very Satisfied` and `Satisfied` respondents and underscores how uncommon dissatisfaction (`Dissatisfied` or `Very Dissatisfied`) is across the sample.
+
+## Task 2: Bivariate Analysis
+
+```{r, eval=FALSE}
+# Loads necessary libraries
+library(tidyverse)
+nhis_clean <- read.csv("nhis_clean.csv")
+
+# 1. Quantitative vs. Qualitative (Age across Sex and Education)
+boxplot(AGEP_A ~ SEX_A, data = nhis_clean, main = "Age by Sex", col = c("skyblue", "lightpink"))
+print(ggplot(nhis_clean, aes(x = SEX_A, y = AGEP_A, fill = SEX_A)) + geom_boxplot() + theme_minimal())
+
+boxplot(AGEP_A ~ EDUCP_A_recoded, data = nhis_clean, main = "Age by Education", col = "lightgreen", las = 2)
+print(ggplot(nhis_clean, aes(x = EDUCP_A_recoded, y = AGEP_A, fill = EDUCP_A_recoded)) + geom_boxplot() + theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust = 1)))
+
+# 2. Qualitative vs. Qualitative (General Health vs. Life Satisfaction)
+print(ggplot(nhis_clean, aes(x = PHSTAT_A, fill = LSATIS4R_A)) + geom_bar(position = "dodge") + labs(title = "Health vs Life Satisfaction", fill = "Life Satisfaction") + theme_minimal())
+
+# 3. Quantitative vs. Quantitative (Height vs. Weight)
+plot(nhis_clean$HEIGHTTC_A, nhis_clean$WEIGHTLBTC_A, main = "Height vs Weight", xlab = "Height", ylab = "Weight", col = rgb(0,0,1,0.2), pch = 19)
+print(ggplot(nhis_clean, aes(x = HEIGHTTC_A, y = WEIGHTLBTC_A)) + geom_point(alpha = 0.3, color = "purple") + geom_smooth(method = "lm", color = "red") + theme_minimal())
+
+correlation_val <- cor(nhis_clean$HEIGHTTC_A, nhis_clean$WEIGHTLBTC_A, use = "complete.obs")
+cat("\nCorrelation Coefficient (Height vs Weight):", correlation_val, "\n")
+```
+
+![](output/Base%20R%20Boxplot%20of%20AGEP_A%20and%20SEX_A.png)
+
+**Interpretation:**
+
+The side-by-side sky-blue (`Female`) and light-pink (`Male`) boxplots show nearly identical age distributions across both sexes, spanning from 18 to 85 (85+ top-coded). Female respondents ($n = 14,070$) have a slightly higher median age ($54.0$ years; $\text{IQR}: 37.0\text{–}68.0$) than male respondents ($n = 11,967$; median 53.0 years; $\text{IQR}: 37.0\text{–}67.0$).
+
+![](output/ggplot2%20Boxplot%20of%20AGEP_A%20and%20SEX_A.png)
+
+**Interpretation:**
+
+With a minimal grid and legend, this plot reinforces the close similarity between female and male age spread and central tendency, with no extreme outliers in either group.
+
+![](output/Base%20R%20Boxplot%20of%20AGEP_A%20and%20EDUCP_A_recoded.png)
+
+**Interpretation:**
+
+The light-green side-by-side boxplots show a clear downward shift in median age as educational attainment increases:
+
+- `1_Less_than_HS` ($n = 2,676$): median $= 58.0$ years ($\text{IQR}: 42.0\text{–}72.0$).
+
+- `2_HS_Graduate` ($n = 5,765$): median $= 56.0$ years ($\text{IQR}: 37.0\text{–}69.0$).
+
+- `3_Some_College` ($n = 7,238$): median $= 54.0$ years ($\text{IQR}: 36.0\text{–}67.0$).
+
+![](output/ggplot%202%20Boxplot%20of%20AGEP_A%20and%20EDUCP_A_recoded.png)
+
+**Interpretation:**
+
+Color-coded by education tier with angled x-axis labels, this plot clearly highlights that older adults in the sample are more concentrated in lower education brackets, whereas younger and middle-aged adults form a larger share of those with college degrees.
+
+![](output/ggplot%202%20Clustered%20Bar%20Chart%20of%20PHSTAT_A%20and%20LSATIS4R_A.png)
+
+**Interpretation:**
+
+Comparing general health status (`PHSTAT_A`) against life satisfaction (`LSATIS4R_A`) reveals a strong positive association between perceived physical health and life satisfaction:
+
+- Among adults reporting `Excellent` health ($n = 6,065$), `Very Satisfied` is by far the largest bar ($4,105$; $67.7\%$), followed by `Satisfied` ($1,848$; $30.5\%$), while `Dissatisfied` ($68$; $1.1\%$) and `Very Dissatisfied` ($44$; $0.7\%$) are minimal.
+
+- Among those reporting `Very Good` health ($n = 9,185$), `Very Satisfied` ($4,879$; $53.1\%$) and `Satisfied` ($4,059$; $44.2\%$) together account for over $97\%$ of respondents.
+
+- Among those reporting `Good` health ($n = 7,287$), `Satisfied` ($4,299$; $59.0\%$) overtakes `Very Satisfied` ($2,645$; $36.3\%$), with small counts in `Dissatisfied` ($288$; $4.0\%$) and `Very Dissatisfied` ($55$; $0.8\%$).
+
+- Among those reporting `Fair` ($n = 2,717$) or `Poor` ($n = 783$) health, total counts are smaller, and dissatisfaction becomes much more pronounced, especially in `Poor` health, where `Dissatisfied` ($182$; $23.2\%$) and `Very Dissatisfied` ($73$; $9.3\%$) together make up $32.5\%$ of the group.
+
+![](output/Scatterplot%20of%20HEIGHTTC_A%20and%20WEIGHTLBTC_A.png)
+
+**Interpretation:**
+
+Shows blue semi-transparent points across heights from 59 to 76 inches and weights from 100 to 299 pounds. Vertical bands reflect integer rounding in self-reported height and weight, and the point cloud trends upward from lower-left to upper-right, meaning taller adults tend to weigh more, with wide weight variation at any given height.
+
+![](output/ggplot%202%20Scatterplot%20of%20HEIGHTTC_A%20and%20WEIGHTLBTC_A.png)
+
+**Interpretation:**
+
+Displays the purple points alongside a red linear regression line with a narrow confidence band, visually confirming the steady upward slope ($r = 0.5023$) across the full height range while underscoring substantial individual spread around the trend line.
+
+# Day 4: Multivariate Analysis & Report Drafting
+
+## Task 1: Multivariate Visualization
+
+```{r, eval=FALSE}
+# Loads necessary libraries
+library(tidyverse)
+library(psych)
+nhis_clean <- read.csv("nhis_clean.csv")
+
+# Faceted Scatter Plot
+p_multi <- ggplot(nhis_clean, aes(x = HEIGHTTC_A, y = WEIGHTLBTC_A, color = SEX_A)) +
+  geom_point(alpha = 0.4, size = 1.5) +
+  facet_wrap(~ PHSTAT_A) +
+  ggtitle("Height vs. Weight by Sex, Faceted by General Health Status") +
+  theme_minimal()
+print(p_multi)
+
+# Correlation Matrix Panel
+quant_df <- nhis_clean %>% select(AGEP_A, WEIGHTLBTC_A, HEIGHTTC_A)
+pairs.panels(quant_df, method = "pearson", density = TRUE, ellipses = TRUE, main = "Correlation Matrix: Age, Weight, Height")
+```
+
+![](output/Enhanced%20Scatterplot%20of%20HEIGHTTC_A%20and%20WEIGHTLBTC_A.png)
+
+**Interpretation:**
+
+In every general health facet (`Excellent`, `Very Good`, `Good`, `Fair`, and `Poor`), male points (`Male`, teal/blue) consistently shift toward greater heights (generally around 66–76 inches) and higher weights than female points (`Female`, salmon/pink, generally concentrated around $59–70$ inches in height). Within each sex group and across all five health panels, taller individuals tend to weigh more, though wide vertical variation in weight exists at every height level. The `Very Good` and `Good` panels appear densest due to larger respondent counts, followed by `Excellent`, while `Fair` and especially `Poor` have noticeably sparser point clouds. In the `Fair` and `Poor` facets, higher-weight points (220-229 lbs) remain visible across both sexes even though overall sample counts in those health categories are smaller.
+
+![](output/Correlation%20Scatterplot%20of%20AGEP_A,%20WEIGHTLBTC_A,%20and%20HEIGHTTC_A.png)
+
+**Interpretation:**
+
+Height and Weight (`HEIGHTTC_A` & `WEIGHTLBTC_A`) shows a moderate positive Pearson correlation ($r = 0.50$), with an upward-sloping regression line and correlation ellipse confirming that height and weight increase together moderately across the sample. Age and Height (`AGEP_A` & `HEIGHTTC_A`) shows a very weak negative correlation ($r = -0.09$), with a nearly flat and slightly downward trend line, indicating only a minimal tendency for older adults in the sample to have slightly lower recorded heights. Age and Weight (`AGEP_A` & `WEIGHTLBTC_A`) shows virtually no linear correlation ($r = -0.02$), with a nearly flat trend line and broad scatter across all adult ages from $18$ to $85+$. The diagonal panels display each variable's histogram and smoothed density curve, highlighting the broad middle-to-older adult age distribution (`AGEP_A`), slightly right-skewed weight distribution (`WEIGHTLBTC_A`), and roughly symmetric height distribution (`HEIGHTTC_A`)
