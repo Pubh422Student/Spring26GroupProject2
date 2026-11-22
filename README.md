@@ -12,4 +12,4 @@
   - Edward Sanchez (Role: Multivariate Analysis & Report Drafting)
 
 ## Project Overview
-...
+This project will go over the univariate, bivariate, and multivariate analysis of adult health indicator data from the 2021 National Health Interview Survey (NHIS). Using R and RStudio, the study examines distributions and relationships across age, body dimensions (height and weight), demographic characteristics (sex, race/ethnicity, education), self-rated general health status, and life satisfaction.
